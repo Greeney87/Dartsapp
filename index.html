@@ -1,0 +1,1692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>🎯 Darts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:       #0d0f14;
+  --bg2:      #13161e;
+  --bg3:      #1a1e29;
+  --border:   #252a38;
+  --border2:  #2e3547;
+  --text:     #e8eaf0;
+  --text2:    #8892a4;
+  --text3:    #555e72;
+  --blue:     #4d9eff;
+  --blue-dim: #1a2d4a;
+  --green:    #00d97e;
+  --green-dim:#0a2b1e;
+  --red:      #ff4d4d;
+  --red-dim:  #2b0f0f;
+  --amber:    #f59e0b;
+  --amber-dim:#2a1f00;
+  --orange:   #ff9f43;
+  --purple:   #a78bfa;
+  --radius:   14px;
+  --radius-sm:8px;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Subtle background grid pattern */
+body::before {
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image: radial-gradient(circle at 1px 1px, #ffffff06 1px, transparent 0);
+  background-size: 28px 28px;
+  pointer-events:none;
+  z-index:0;
+}
+
+.app {
+  max-width: 430px;
+  margin: auto;
+  padding: 16px 16px 32px;
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+}
+
+.screen{display:none}.active{display:block}
+
+/* ── SCREEN TRANSITION ─────────────────────────── */
+.screen.active { animation: fadeIn .18s ease; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+
+/* ── BUTTONS ───────────────────────────────────── */
+.btn {
+  width:100%; padding:15px; margin:6px 0;
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  background: var(--bg3);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-size: .95em; font-weight: 500;
+  cursor: pointer;
+  transition: all .15s ease;
+  letter-spacing: .01em;
+}
+.btn:hover { background: #222738; border-color: #3a4255; transform: translateY(-1px); }
+.btn:active { transform: translateY(0); }
+
+.btn-primary {
+  background: linear-gradient(135deg, #1a3a6e, #1e4a8a) !important;
+  border-color: var(--blue) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 15px rgba(77,158,255,.15);
+}
+.btn-primary:hover { box-shadow: 0 6px 20px rgba(77,158,255,.25); }
+
+.btn-green {
+  background: linear-gradient(135deg, #0a3320, #0f4a2e) !important;
+  border-color: var(--green) !important;
+  color: var(--green) !important;
+  box-shadow: 0 4px 15px rgba(0,217,126,.1);
+}
+.btn-green:hover { box-shadow: 0 6px 20px rgba(0,217,126,.2); }
+
+.btn-red {
+  background: linear-gradient(135deg, #3a0f0f, #4a1515) !important;
+  border-color: var(--red) !important;
+  color: var(--red) !important;
+}
+
+.btn-amber {
+  background: linear-gradient(135deg, #2a1800, #3a2200) !important;
+  border-color: var(--amber) !important;
+  color: var(--amber) !important;
+}
+
+.btn-gray { background: #1e2130 !important; border-color: var(--border2) !important; color: var(--text2) !important; }
+
+.btn-orange {
+  background: linear-gradient(135deg, #2a1a00, #3a2500) !important;
+  border-color: var(--orange) !important;
+  color: var(--orange) !important;
+}
+
+/* ── TOPBAR ────────────────────────────────────── */
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.topbar h3 { font-size: .9em; font-weight: 500; color: var(--text2); letter-spacing: .03em; }
+
+.exit {
+  background: var(--red-dim);
+  color: var(--red);
+  border: 1px solid #4a1515;
+  padding: 7px 14px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  font-size: .85em;
+  font-weight: 500;
+  transition: all .15s;
+}
+.exit:hover { background: #3a1010; }
+
+/* ── NAV ───────────────────────────────────────── */
+.nav {
+  display: flex; gap: 4px;
+  margin-bottom: 20px;
+  background: var(--bg2);
+  border-radius: 12px;
+  padding: 4px;
+  border: 1px solid var(--border);
+}
+.nav-btn {
+  flex: 1; padding: 9px 4px;
+  border: none; border-radius: 9px;
+  background: transparent; color: var(--text3);
+  font-family: 'Inter', sans-serif;
+  font-size: .8em; font-weight: 500;
+  cursor: pointer; transition: all .15s;
+}
+.nav-btn.active {
+  background: var(--bg3);
+  color: var(--text);
+  box-shadow: 0 1px 4px rgba(0,0,0,.4);
+}
+
+/* ── CARDS ─────────────────────────────────────── */
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 12px;
+}
+.card-title {
+  font-size: .8em; font-weight: 600;
+  color: var(--blue);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  margin-bottom: 12px;
+}
+
+/* ── SECTION LABEL ─────────────────────────────── */
+.section-label {
+  font-size: .72em; font-weight: 600;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  margin: 16px 0 6px;
+}
+
+/* ── MENU AVATAR ───────────────────────────────── */
+.menu-hero {
+  background: linear-gradient(135deg, var(--bg2), var(--bg3));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.menu-hero-avatar {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  background: var(--blue-dim);
+  border: 2px solid var(--blue);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.6em;
+  overflow: hidden; flex-shrink: 0;
+}
+.menu-hero-avatar img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+.menu-hero-name { font-weight: 600; font-size: 1.05em; color: var(--text); }
+.menu-hero-sub { font-size: .78em; color: var(--text2); margin-top: 2px; }
+
+/* ── PROFILE AVATAR ────────────────────────────── */
+.avatar-wrap { text-align: center; margin-bottom: 20px; }
+.avatar {
+  width: 90px; height: 90px;
+  border-radius: 50%;
+  background: var(--blue-dim);
+  border: 3px solid var(--blue);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.6em;
+  margin: 0 auto 12px;
+  cursor: pointer;
+  overflow: hidden;
+  box-shadow: 0 0 24px rgba(77,158,255,.2);
+  transition: box-shadow .2s;
+}
+.avatar:hover { box-shadow: 0 0 32px rgba(77,158,255,.35); }
+.avatar img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+
+/* ── INPUT ─────────────────────────────────────── */
+.name-field { margin-bottom: 14px; }
+.name-field label {
+  display: block;
+  font-size: .78em; font-weight: 500;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  margin-bottom: 6px;
+}
+.name-input {
+  width: 100%; padding: 13px 14px;
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  background: var(--bg3);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-size: 1em;
+  transition: border-color .15s;
+}
+.name-input:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(77,158,255,.1); }
+
+/* ── GAME CENTER ───────────────────────────────── */
+.scoreboard {
+  background: linear-gradient(160deg, #13161e, #0d1020);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 12px 12px;
+  margin: 10px 0 8px;
+  position: relative;
+  overflow: hidden;
+}
+.scoreboard::before {
+  content:'';
+  position:absolute; inset:0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(77,158,255,.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+.player-name {
+  font-size: 1em; font-weight: 600;
+  color: var(--blue);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  margin-bottom: 2px;
+}
+.player-name.cpu { color: var(--orange); }
+
+.player-score {
+  font-family: 'Rajdhani', 'Inter', sans-serif;
+  font-size: 5.5em; font-weight: 700;
+  line-height: 1;
+  color: var(--text);
+  letter-spacing: -.02em;
+  transition: color .3s;
+}
+.player-score.checkout { color: var(--green); text-shadow: 0 0 30px rgba(0,217,126,.3); }
+
+.other-score-row {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 8px; padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+.other-score-name { font-size: .78em; font-weight: 500; color: var(--text2); }
+.other-score-val { font-family: 'Rajdhani', sans-serif; font-size: 1.3em; font-weight: 700; color: var(--orange); }
+
+.dart-info { color: var(--text3); font-size: .82em; margin-top: 4px; letter-spacing: .05em; }
+
+/* ── STATS ROW ─────────────────────────────────── */
+.stats-row {
+  display: flex; justify-content: center; gap: 0;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); margin: 6px 0; overflow: hidden;
+}
+.stat-item {
+  flex: 1; text-align: center;
+  padding: 8px 6px;
+  border-right: 1px solid var(--border);
+}
+.stat-item:last-child { border-right: none; }
+.stat-label { font-size: .62em; color: var(--text3); text-transform: uppercase; letter-spacing: .07em; }
+.stat-value { font-size: 1.05em; font-weight: 700; color: var(--text); margin-top: 1px; }
+
+/* ── FINISH BOX ────────────────────────────────── */
+.finish-box {
+  background: linear-gradient(135deg, #0a2b1e, #0d3324);
+  border: 1px solid #1a4d35;
+  border-radius: var(--radius-sm);
+  padding: 8px 14px;
+  margin: 6px 0 4px;
+  text-align: center;
+  box-shadow: 0 0 16px rgba(0,217,126,.07);
+}
+.finish-label {
+  font-size: .68em; font-weight: 600;
+  color: #4abf8a;
+  text-transform: uppercase; letter-spacing: .1em; margin-bottom: 3px;
+}
+.finish-suggestion { color: var(--green); font-size: 1em; font-weight: 700; }
+
+/* ── SERIES BAR ────────────────────────────────── */
+.series-bar {
+  display: flex; justify-content: space-between; align-items: center;
+  background: linear-gradient(135deg, var(--bg2), var(--bg3));
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px; margin: 0 0 10px;
+}
+.series-label { font-size: .68em; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 4px; }
+.series-score { font-family: 'Rajdhani', sans-serif; font-size: 1.7em; font-weight: 700; color: var(--text); }
+.leg-dots { display: flex; gap: 5px; }
+.leg-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--border); border: 1px solid var(--border2); transition: all .3s; }
+.leg-dot.won { background: var(--green); border-color: var(--green); box-shadow: 0 0 6px rgba(0,217,126,.5); }
+.leg-dot.cpu-won { background: var(--orange); border-color: var(--orange); box-shadow: 0 0 6px rgba(255,159,67,.5); }
+
+/* ── CPU THINKING ──────────────────────────────── */
+.cpu-thinking {
+  text-align: center; color: var(--orange);
+  font-size: .85em; font-weight: 500;
+  margin: 4px 0; min-height: 18px;
+  letter-spacing: .03em;
+}
+
+/* ── KEYPAD ────────────────────────────────────── */
+.dart-entry-display {
+  text-align: center;
+  font-family: 'Rajdhani', 'Inter', monospace;
+  font-size: 2.8em; font-weight: 700;
+  padding: 10px; margin: 8px 0 6px;
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  min-height: 60px; color: var(--text);
+  letter-spacing: .04em;
+  box-shadow: inset 0 2px 8px rgba(0,0,0,.3);
+}
+
+.num-grid {
+  display: grid; grid-template-columns: repeat(3,1fr);
+  gap: 7px; margin: 6px 0;
+}
+.num-grid button {
+  padding: 17px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border2);
+  background: var(--bg2);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-size: 1.15em; font-weight: 600;
+  cursor: pointer;
+  transition: all .1s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,.2);
+}
+.num-grid button:hover { background: var(--bg3); border-color: #3a4255; transform: translateY(-1px); box-shadow: 0 4px 8px rgba(0,0,0,.3); }
+.num-grid button:active { transform: translateY(0); box-shadow: 0 1px 2px rgba(0,0,0,.2); }
+.num-grid button:disabled { opacity: .25; cursor: default; transform: none; }
+
+.btn-miss {
+  background: #1e2030 !important; border-color: #2e3550 !important;
+  color: var(--text2) !important;
+}
+.btn-full { grid-column: 1 / -1; }
+
+/* ── AROUND THE CLOCK ──────────────────────────── */
+.attc-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 6px; margin: 12px 0; }
+.attc-num {
+  padding: 11px 4px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border); background: var(--bg2);
+  color: var(--text2); font-size: .9em; font-weight: 500;
+  text-align: center; transition: all .2s;
+}
+.attc-num.current {
+  border-color: var(--blue); background: var(--blue-dim);
+  color: var(--blue); font-weight: 700;
+  box-shadow: 0 0 12px rgba(77,158,255,.2);
+}
+.attc-num.hit {
+  background: var(--green-dim); border-color: #1a4d35;
+  color: var(--green);
+}
+.attc-num.missed {
+  background: var(--red-dim); border-color: #3a1515; color: #664040;
+}
+.attc-target {
+  text-align: center;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 3.5em; font-weight: 700;
+  color: var(--blue); margin: 8px 0 2px;
+  text-shadow: 0 0 20px rgba(77,158,255,.3);
+}
+.attc-sub { text-align: center; color: var(--text2); font-size: .85em; margin-bottom: 4px; }
+.attc-darts { text-align: center; font-size: .8em; color: var(--text3); margin-top: 4px; }
+
+/* ── STATS ─────────────────────────────────────── */
+.stats-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px; margin-bottom: 12px;
+}
+.stats-card h3 {
+  font-size: .8em; font-weight: 600;
+  color: var(--blue); text-transform: uppercase;
+  letter-spacing: .08em; margin-bottom: 12px;
+}
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.stat-box {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 12px; text-align: center;
+}
+.stat-box .val { font-family: 'Rajdhani', sans-serif; font-size: 1.7em; font-weight: 700; color: var(--text); }
+.stat-box .lbl { font-size: .65em; color: var(--text3); text-transform: uppercase; letter-spacing: .07em; margin-top: 2px; }
+.history-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 0; border-bottom: 1px solid var(--border);
+  font-size: .85em; color: var(--text2);
+}
+.history-row:last-child { border-bottom: none; }
+.badge-win { color: var(--green); font-weight: 600; }
+.badge-loss { color: var(--text3); }
+
+canvas.graph { width: 100%; height: 140px; display: block; }
+
+/* ── DIFFICULTY / SERIES ───────────────────────── */
+.difficulty-btns, .series-btns {
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin: 8px 0;
+}
+.diff-btn, .series-btn {
+  padding: 12px 6px;
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  background: var(--bg2); color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-size: .8em; cursor: pointer; text-align: center;
+  transition: all .15s;
+}
+.diff-btn:hover, .series-btn:hover { background: var(--bg3); }
+.diff-btn.selected { border-color: var(--orange); background: var(--amber-dim); color: var(--orange); }
+.series-btn.selected { border-color: var(--blue); background: var(--blue-dim); color: var(--blue); }
+.diff-icon { font-size: 1.4em; display: block; margin-bottom: 4px; }
+.diff-avg { font-size: .65em; color: var(--text3); margin-top: 3px; }
+
+/* ── END SCREEN ────────────────────────────────── */
+.end-screen { text-align: center; padding: 20px 0; }
+.end-title { font-size: 1.9em; font-weight: 800; color: var(--green); margin-bottom: 6px; }
+.end-title.lost { color: var(--red); }
+.end-subtitle { color: var(--text2); margin-bottom: 14px; font-size: .95em; }
+.end-series {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 3em; font-weight: 700; margin: 10px 0;
+  color: var(--text);
+}
+.end-stats {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px;
+  margin-bottom: 18px; text-align: left;
+}
+.end-stat-row {
+  display: flex; justify-content: space-between;
+  padding: 7px 0; border-bottom: 1px solid var(--border);
+  font-size: .9em;
+}
+.end-stat-row:last-child { border-bottom: none; }
+.end-stat-label { color: var(--text2); }
+.end-stat-value { color: var(--text); font-weight: 600; }
+
+/* ── GAME TYPE BUTTONS ─────────────────────────── */
+.game-btn-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin: 6px 0; }
+.game-btn {
+  padding: 18px 6px; border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  background: var(--bg2); color: var(--text);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1.3em; font-weight: 700;
+  cursor: pointer; text-align: center;
+  transition: all .15s;
+  letter-spacing: .02em;
+}
+.game-btn:hover { background: var(--bg3); border-color: var(--border2); transform: translateY(-1px); }
+.game-btn.active-game { border-color: var(--blue); background: var(--blue-dim); color: var(--blue); }
+
+h2 { font-weight: 700; text-align: center; margin-bottom: 16px; font-size: 1.3em; }
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ===== MAIN MENU ===== -->
+<div id="menuScreen" class="screen active">
+  <div class="nav">
+    <button class="nav-btn active" onclick="menuNav('home')">🏠 Home</button>
+    <button class="nav-btn" onclick="menuNav('stats')">📊 Stats</button>
+    <button class="nav-btn" onclick="menuNav('profile')">👤 Profile</button>
+  </div>
+
+  <div id="tabHome">
+    <div id="menuAvatar"></div>
+    <div class="section-label">Standard Games</div>
+    <button class="btn btn-primary" onclick="selectMode('solo')">🎯 Solo Practice</button>
+    <button class="btn" onclick="selectMode('multi')">👥 Local Multiplayer</button>
+    <button class="btn btn-orange" onclick="selectMode('cpu')">🤖 vs Computer</button>
+    <div class="section-label">Practice Modes</div>
+    <button class="btn" style="border-color:#a78bfa;color:#a78bfa" onclick="startAroundClock('singles')">🕐 Around the Clock</button>
+    <button class="btn" style="border-color:#f472b6;color:#f472b6" onclick="startAroundClock('doubles')">🎯 Around the Clock Doubles</button>
+  </div>
+
+  <div id="tabStats" style="display:none">
+    <div class="stats-card">
+      <h3>Overall Stats</h3>
+      <div class="stat-grid" id="overallStats"></div>
+    </div>
+    <div class="stats-card">
+      <h3>By Game Type</h3>
+      <div id="gameTypeStats"></div>
+    </div>
+    <div class="stats-card">
+      <h3>Average per visit — last 10 games</h3>
+      <canvas class="graph" id="avgGraph" width="400" height="140"></canvas>
+    </div>
+    <div class="stats-card">
+      <h3>Win rate — last 10 games</h3>
+      <canvas class="graph" id="winGraph" width="400" height="140"></canvas>
+    </div>
+    <div class="stats-card">
+      <h3>Recent Activity</h3>
+      <div id="recentGames"></div>
+    </div>
+  </div>
+
+  <div id="tabProfile" style="display:none">
+    <div class="avatar-wrap">
+      <div class="avatar" id="profileAvatar" onclick="changeAvatar()">😎</div>
+      <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="loadAvatar(event)"/>
+      <p style="color:var(--text3);font-size:.78em;margin-bottom:16px">Tap avatar to change photo</p>
+    </div>
+    <div class="name-field">
+      <label>Your name</label>
+      <input class="name-input" id="profileName" placeholder="Enter your name"/>
+    </div>
+    <button class="btn btn-green" onclick="saveProfile()">Save Profile</button>
+  </div>
+</div>
+
+<!-- ===== NAME ENTRY ===== -->
+<div id="nameScreen" class="screen">
+  <div class="topbar">
+    <button class="exit" onclick="show('menuScreen')">← Back</button>
+    <h3>Player Names</h3>
+  </div>
+  <div id="nameFields"></div>
+  <button class="btn btn-green" style="margin-top:12px" onclick="goToGameSelect()">Continue →</button>
+</div>
+
+<!-- ===== CPU SETUP ===== -->
+<div id="cpuSetup" class="screen">
+  <div class="topbar">
+    <button class="exit" onclick="show('menuScreen')">← Back</button>
+    <h3>vs Computer</h3>
+  </div>
+  <div class="name-field">
+    <label>Your name</label>
+    <input class="name-input" id="cpuPlayerName" placeholder="Your name"/>
+  </div>
+  <div class="section-label">Difficulty</div>
+  <div class="difficulty-btns">
+    <div class="diff-btn selected" id="diff-beginner" onclick="selectDifficulty('beginner')"><span class="diff-icon">🐣</span>Beginner<div class="diff-avg">~25 avg</div></div>
+    <div class="diff-btn" id="diff-pub" onclick="selectDifficulty('pub')"><span class="diff-icon">🍺</span>Pub Player<div class="diff-avg">~45 avg</div></div>
+    <div class="diff-btn" id="diff-world" onclick="selectDifficulty('world')"><span class="diff-icon">🏆</span>World Class<div class="diff-avg">~85 avg</div></div>
+  </div>
+  <div class="section-label">Series Format</div>
+  <div class="series-btns">
+    <div class="series-btn selected" id="series-3" onclick="selectSeries(3)">Best of 3</div>
+    <div class="series-btn" id="series-5" onclick="selectSeries(5)">Best of 5</div>
+    <div class="series-btn" id="series-7" onclick="selectSeries(7)">Best of 7</div>
+  </div>
+  <div class="section-label">Game</div>
+  <div class="game-btn-grid">
+    <div class="game-btn" onclick="startCpuGame(501)">501</div>
+    <div class="game-btn" onclick="startCpuGame(401)">401</div>
+    <div class="game-btn" onclick="startCpuGame(301)">301</div>
+  </div>
+</div>
+
+<!-- ===== GAME SELECT ===== -->
+<div id="gameSelect" class="screen">
+  <div class="topbar">
+    <button class="exit" onclick="show('nameScreen')">← Back</button>
+    <h3>Choose Game</h3>
+  </div>
+  <div class="section-label">Standard</div>
+  <div class="game-btn-grid">
+    <div class="game-btn" onclick="startGame(501)">501</div>
+    <div class="game-btn" onclick="startGame(401)">401</div>
+    <div class="game-btn" onclick="startGame(301)">301</div>
+  </div>
+  <div class="section-label">Doubles</div>
+  <div class="game-btn-grid">
+    <div class="game-btn" onclick="startGame(40)">40</div>
+    <div class="game-btn" onclick="startGame(100)">100</div>
+    <div class="game-btn" onclick="startGame(170)">170</div>
+  </div>
+</div>
+
+<!-- ===== AROUND THE CLOCK ===== -->
+<div id="attcScreen" class="screen">
+  <div class="topbar">
+    <button class="exit" onclick="show('menuScreen')">← Back</button>
+    <h3>Around the Clock</h3>
+  </div>
+  <div class="attc-target" id="attcTarget">1</div>
+  <div class="attc-sub">Hit this number to advance</div>
+  <div class="attc-darts" id="attcDarts"></div>
+  <div class="attc-grid" id="attcGrid"></div>
+  <div style="margin-top:12px">
+    <button class="btn btn-green" id="attcHitBtn" onclick="attcHit()">✓ Hit</button>
+    <button class="btn btn-red" onclick="attcMiss()">✗ Miss</button>
+    <button class="btn btn-amber" onclick="attcUndo()">⟵ Undo</button>
+  </div>
+</div>
+
+<!-- ===== AROUND THE CLOCK DOUBLES ===== -->
+<div id="attcDblScreen" class="screen">
+  <div class="topbar">
+    <button class="exit" onclick="show('menuScreen')">← Back</button>
+    <h3>Around the Clock Doubles</h3>
+  </div>
+  <div class="attc-target" id="attcDblTarget">D20</div>
+  <div class="attc-sub" id="attcDblSub">Hit this double to advance</div>
+  <div class="attc-darts" id="attcDblDarts"></div>
+  <div class="attc-grid" id="attcDblGrid" style="grid-template-columns:repeat(4,1fr)"></div>
+  <div style="margin-top:12px">
+    <button class="btn btn-green" id="attcDblHitBtn" onclick="attcDblHit()">✓ Hit D20</button>
+    <button class="btn btn-red" onclick="attcDblMiss()">✗ Miss</button>
+    <button class="btn btn-amber" onclick="attcDblUndo()">⟵ Undo</button>
+  </div>
+</div>
+
+<!-- ===== GAME ===== -->
+<div id="game" class="screen">
+  <div class="topbar">
+    <button class="exit" onclick="goHome()">EXIT</button>
+    <span id="gameLabel" style="font-size:.82em;color:var(--text3);font-weight:500;letter-spacing:.04em;text-transform:uppercase"></span>
+  </div>
+
+  <div id="seriesBar" style="display:none" class="series-bar">
+    <div>
+      <div class="series-label" id="seriesP1Label"></div>
+      <div class="leg-dots" id="seriesP1Dots"></div>
+    </div>
+    <div class="series-score" id="seriesScore"></div>
+    <div style="text-align:right">
+      <div class="series-label" id="seriesP2Label"></div>
+      <div class="leg-dots" id="seriesP2Dots" style="justify-content:flex-end;display:flex"></div>
+    </div>
+  </div>
+
+  <div class="scoreboard">
+    <div id="playerName" class="player-name"></div>
+    <div id="score" class="player-score"></div>
+    <div id="dartInfo" class="dart-info"></div>
+    <div id="otherScoreRow" class="other-score-row" style="display:none">
+      <span class="other-score-name" id="otherScoreName"></span>
+      <span class="other-score-val" id="otherScore"></span>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-item">
+      <div class="stat-label">Avg / visit</div>
+      <div class="stat-value" id="avgDisplay">—</div>
+    </div>
+    <div class="stat-item" id="otherAvgWrap" style="display:none">
+      <div class="stat-label" id="otherAvgLabel">Opp avg</div>
+      <div class="stat-value" id="otherAvgDisplay">—</div>
+    </div>
+  </div>
+
+  <div id="finishBox" class="finish-box" style="display:none">
+    <div class="finish-label" id="finishLabel"></div>
+    <div class="finish-suggestion" id="finishSuggestion"></div>
+  </div>
+
+  <div id="cpuThinking" class="cpu-thinking"></div>
+  <div id="dartEntryDisplay" class="dart-entry-display">—</div>
+
+  <div class="num-grid" id="keypad">
+    <button onclick="padPress(1)">1</button>
+    <button onclick="padPress(2)">2</button>
+    <button onclick="padPress(3)">3</button>
+    <button onclick="padPress(4)">4</button>
+    <button onclick="padPress(5)">5</button>
+    <button onclick="padPress(6)">6</button>
+    <button onclick="padPress(7)">7</button>
+    <button onclick="padPress(8)">8</button>
+    <button onclick="padPress(9)">9</button>
+    <button id="missBtn" class="btn-miss btn-full" onclick="miss()">Miss</button>
+    <button class="btn-red" onclick="bust()">Bust</button>
+    <button onclick="padPress(0)">0</button>
+    <button class="btn-green" onclick="submitDart()">Submit</button>
+    <button class="btn-amber btn-full" onclick="undoLast()">⟵ Undo</button>
+  </div>
+</div>
+
+<!-- ===== LEG END (CPU) ===== -->
+<div id="legEndScreen" class="screen">
+  <div class="end-screen">
+    <div class="end-title" id="legEndTitle"></div>
+    <div class="end-subtitle" id="legEndSubtitle"></div>
+    <div class="end-stats" id="legEndStats"></div>
+    <button class="btn btn-green" onclick="nextLeg()">Next Leg →</button>
+    <button class="btn btn-gray" onclick="goHome()">Quit Series</button>
+  </div>
+</div>
+
+<!-- ===== END SCREEN ===== -->
+<div id="endScreen" class="screen">
+  <div class="end-screen">
+    <div class="end-title" id="endTitle">🎯 Winner!</div>
+    <div class="end-subtitle" id="endSubtitle"></div>
+    <div class="end-series" id="endSeriesScore" style="display:none"></div>
+    <div class="end-stats" id="endStats"></div>
+    <button class="btn btn-green" onclick="playAgain()">Play Again</button>
+    <button class="btn btn-gray" onclick="goHome()">Main Menu</button>
+  </div>
+</div>
+
+</div>
+<script>
+
+
+// ===================== AUDIO =====================
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null;
+function getAudio() { if (!audioCtx) audioCtx = new AudioCtx(); return audioCtx; }
+
+function playSound(type) {
+  try {
+    const ctx = getAudio();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    if (type === 'dart') {
+      o.frequency.setValueAtTime(300, ctx.currentTime);
+      o.frequency.exponentialRampToValueAtTime(150, ctx.currentTime + 0.1);
+      g.gain.setValueAtTime(0.3, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+      o.start(); o.stop(ctx.currentTime + 0.15);
+    } else if (type === 'bust') {
+      o.type = 'sawtooth';
+      o.frequency.setValueAtTime(200, ctx.currentTime);
+      o.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.3);
+      g.gain.setValueAtTime(0.2, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+      o.start(); o.stop(ctx.currentTime + 0.3);
+    } else if (type === 'win') {
+      [523, 659, 784, 1047].forEach((f, i) => {
+        const o2 = ctx.createOscillator();
+        const g2 = ctx.createGain();
+        o2.connect(g2); g2.connect(ctx.destination);
+        o2.frequency.value = f;
+        g2.gain.setValueAtTime(0, ctx.currentTime + i * 0.12);
+        g2.gain.linearRampToValueAtTime(0.25, ctx.currentTime + i * 0.12 + 0.05);
+        g2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.12 + 0.3);
+        o2.start(ctx.currentTime + i * 0.12);
+        o2.stop(ctx.currentTime + i * 0.12 + 0.3);
+      });
+      return;
+    }
+  } catch(e) {}
+}
+
+// ===================== PROFILE / STORAGE =====================
+let profile = JSON.parse(localStorage.getItem('dartsProfile') || '{"name":"Player","avatar":"😎"}');
+let gameHistory = JSON.parse(localStorage.getItem('dartsHistory') || '[]');
+
+function saveProfile() {
+  const newName = document.getElementById('profileName').value.trim();
+  if (newName) profile.name = newName;
+  localStorage.setItem('dartsProfile', JSON.stringify(profile));
+  renderMenuAvatar();
+  // Update CPU player name field if visible
+  const cpuField = document.getElementById('cpuPlayerName');
+  if (cpuField && !cpuField.value) cpuField.value = profile.name;
+  alert('✅ Profile saved!');
+}
+
+function changeAvatar() { document.getElementById('avatarInput').click(); }
+
+function loadAvatar(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    profile.avatar = ev.target.result;
+    document.getElementById('profileAvatar').innerHTML = `<img src="${profile.avatar}"/>`;
+    localStorage.setItem('dartsProfile', JSON.stringify(profile));
+    renderMenuAvatar();
+  };
+  reader.readAsDataURL(file);
+}
+
+function renderMenuAvatar() {
+  const isImg = profile.avatar && profile.avatar.startsWith('data:');
+  const avatarHtml = isImg ? `<img src="${profile.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/>` : profile.avatar;
+  document.getElementById('menuAvatar').innerHTML = `
+    <div class="menu-hero">
+      <div class="menu-hero-avatar">${avatarHtml}</div>
+      <div>
+        <div class="menu-hero-name">${profile.name}</div>
+        <div class="menu-hero-sub">Ready to play</div>
+      </div>
+    </div>`;
+  const profAv = document.getElementById('profileAvatar');
+  if (profAv) profAv.innerHTML = isImg ? `<img src="${profile.avatar}"/>` : profile.avatar;
+  const profName = document.getElementById('profileName');
+  if (profName) profName.value = profile.name;
+}
+
+function saveGameToHistory(entry) {
+  gameHistory.unshift(entry);
+  if (gameHistory.length > 50) gameHistory = gameHistory.slice(0, 50);
+  localStorage.setItem('dartsHistory', JSON.stringify(gameHistory));
+}
+
+// ===================== STATS =====================
+function menuNav(tab) {
+  ['home','stats','profile'].forEach(t => {
+    document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1)).style.display = t === tab ? 'block' : 'none';
+  });
+  document.querySelectorAll('.nav-btn').forEach((b,i) => b.classList.toggle('active', ['home','stats','profile'][i] === tab));
+  if (tab === 'stats') renderStats();
+  if (tab === 'profile') renderMenuAvatar();
+}
+
+function renderStats() {
+  const games = gameHistory.filter(g => g.type === 'game' || g.type === 'attc' || g.type === 'attc-dbl');
+  const standardGames = games.filter(g => g.type === 'game');
+  const totalGames = standardGames.length;
+  const wins = standardGames.filter(g => g.won).length;
+  const avgs = standardGames.filter(g => g.avg > 0).map(g => g.avg);
+  const overallAvg = avgs.length ? (avgs.reduce((a,b)=>a+b,0)/avgs.length).toFixed(1) : '—';
+  const bestAvg = avgs.length ? Math.max(...avgs).toFixed(1) : '—';
+  const highestCheckout = standardGames.reduce((m,g) => g.checkout > m ? g.checkout : m, 0);
+  const bestLeg = standardGames.filter(g=>g.won&&g.visits>0).reduce((m,g)=>g.visits<m?g.visits:m, 999);
+
+  // Streak
+  let streak = 0, streakType = '';
+  for (const g of standardGames) {
+    if (streak === 0) { streakType = g.won ? 'W' : 'L'; streak = 1; }
+    else if ((g.won && streakType === 'W') || (!g.won && streakType === 'L')) streak++;
+    else break;
+  }
+
+  document.getElementById('overallStats').innerHTML = `
+    <div class="stat-box"><div class="val">${totalGames}</div><div class="lbl">Games</div></div>
+    <div class="stat-box"><div class="val">${wins}</div><div class="lbl">Wins</div></div>
+    <div class="stat-box"><div class="val">${overallAvg}</div><div class="lbl">Avg / visit</div></div>
+    <div class="stat-box"><div class="val">${bestAvg}</div><div class="lbl">Best avg</div></div>
+    <div class="stat-box"><div class="val">${highestCheckout || '—'}</div><div class="lbl">Best checkout</div></div>
+    <div class="stat-box"><div class="val">${bestLeg < 999 ? bestLeg : '—'}</div><div class="lbl">Best leg (visits)</div></div>
+    <div class="stat-box" style="grid-column:1/-1">
+      <div class="val">${streak > 0 ? streak + streakType : '—'}</div>
+      <div class="lbl">Current streak</div>
+    </div>`;
+
+  // By game type
+  const types = [501, 401, 301];
+  let typeHtml = '';
+  types.forEach(t => {
+    const tg = standardGames.filter(g => g.gameType === t);
+    if (!tg.length) return;
+    const tw = tg.filter(g => g.won).length;
+    const ta = tg.filter(g=>g.avg>0).map(g=>g.avg);
+    const tavg = ta.length ? (ta.reduce((a,b)=>a+b,0)/ta.length).toFixed(1) : '—';
+    typeHtml += `<div class="history-row"><span style="color:#4da3ff;font-weight:700">${t}</span><span>${tg.length} games · ${tw} wins</span><span>${tavg} avg</span></div>`;
+  });
+  document.getElementById('gameTypeStats').innerHTML = typeHtml || '<div style="color:#888;font-size:.85em">No games yet</div>';
+
+  // Graphs (standard games only)
+  const last10 = standardGames.slice(0, 10).reverse();
+  drawGraph('avgGraph', last10.map(g => g.avg || 0), '#4da3ff', 'Avg');
+  drawGraph('winGraph', last10.map(g => g.won ? 100 : 0), '#00e676', '%');
+
+  // Recent - show all activity including practice
+  const allRecent = gameHistory.slice(0, 15);
+  if (!allRecent.length) {
+    document.getElementById('recentGames').innerHTML = '<div style="color:#888;font-size:.85em;padding:6px 0">No games yet</div>';
+    return;
+  }
+  document.getElementById('recentGames').innerHTML = allRecent.map(g => {
+    const date = new Date(g.date).toLocaleDateString();
+    if (g.type === 'attc') {
+      return `<div class="history-row"><span>🕐 Around the Clock · ${date}</span><span>${g.darts} darts · ${g.hits}/20</span></div>`;
+    }
+    if (g.type === 'attc-dbl') {
+      return `<div class="history-row"><span>🎯 Doubles Clock · ${date}</span><span>${g.darts} darts · ${g.hits}/20</span></div>`;
+    }
+    const res = g.won ? '<span class="badge-win">Win</span>' : '<span class="badge-loss">Loss</span>';
+    return `<div class="history-row"><span>${g.gameType} · ${date}</span><span>${g.avg ? g.avg.toFixed(1)+' avg' : '—'}</span>${res}</div>`;
+  }).join('');
+}
+
+function drawGraph(canvasId, data, color, label) {
+  const canvas = document.getElementById(canvasId);
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  if (!data.length) return;
+
+  const max = Math.max(...data, 1);
+  const pad = { top:16, right:16, bottom:24, left:36 };
+  const gW = W - pad.left - pad.right;
+  const gH = H - pad.top - pad.bottom;
+
+  // Grid lines
+  ctx.strokeStyle = '#222'; ctx.lineWidth = 1;
+  [0, 0.25, 0.5, 0.75, 1].forEach(f => {
+    const y = pad.top + gH * (1 - f);
+    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(pad.left + gW, y); ctx.stroke();
+    ctx.fillStyle = '#555'; ctx.font = '10px Arial'; ctx.textAlign = 'right';
+    ctx.fillText(Math.round(max * f), pad.left - 4, y + 3);
+  });
+
+  if (data.length < 2) return;
+  const step = gW / (data.length - 1);
+
+  // Fill
+  ctx.beginPath();
+  data.forEach((v, i) => {
+    const x = pad.left + i * step;
+    const y = pad.top + gH * (1 - v / max);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.lineTo(pad.left + (data.length-1)*step, pad.top + gH);
+  ctx.lineTo(pad.left, pad.top + gH);
+  ctx.closePath();
+  ctx.fillStyle = color + '22'; ctx.fill();
+
+  // Line
+  ctx.beginPath();
+  data.forEach((v, i) => {
+    const x = pad.left + i * step;
+    const y = pad.top + gH * (1 - v / max);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.stroke();
+
+  // Dots
+  data.forEach((v, i) => {
+    const x = pad.left + i * step;
+    const y = pad.top + gH * (1 - v / max);
+    ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI*2);
+    ctx.fillStyle = color; ctx.fill();
+  });
+
+  // X labels
+  ctx.fillStyle = '#555'; ctx.font = '10px Arial'; ctx.textAlign = 'center';
+  data.forEach((_, i) => {
+    ctx.fillText(i+1, pad.left + i * step, H - 6);
+  });
+}
+
+// ===================== CHECKOUT TABLE =====================
+const checkoutTable = {
+  // ── 1-dart finishes (doubles only) ──────────────────────────
+  2:'D1',   4:'D2',   6:'D3',   8:'D4',   10:'D5',
+  12:'D6',  14:'D7',  16:'D8',  18:'D9',  20:'D10',
+  22:'D11', 24:'D12', 26:'D13', 28:'D14', 30:'D15',
+  32:'D16', 34:'D17', 36:'D18', 38:'D19', 40:'D20',
+  50:'Bull',
+
+  // ── 2-dart finishes: odd numbers (S + D) ────────────────────
+  // Prefer leaving a double on D20 where possible, else nearest clean double
+  3:'S1 D1',   5:'S1 D2',   7:'S3 D2',   9:'S1 D4',
+  11:'S3 D4',  13:'S5 D4',  15:'S7 D4',  17:'S9 D4',
+  19:'S3 D8',  21:'S5 D8',  23:'S7 D8',  25:'S9 D8',
+  27:'S11 D8', 29:'S9 D10', 31:'S11 D10',33:'S13 D10',
+  35:'S15 D10',37:'S17 D10',39:'S19 D10',
+  41:'S1 D20', 43:'S3 D20', 45:'S5 D20', 47:'S7 D20',
+  49:'S9 D20', 51:'S11 D20',53:'S13 D20',55:'S15 D20',
+  57:'S17 D20',59:'S19 D20',
+
+  // ── 2-dart finishes: even numbers (S + D) ───────────────────
+  42:'S2 D20', 44:'S4 D20', 46:'S6 D20', 48:'S8 D20',
+  52:'S12 D20',54:'S14 D20',56:'S16 D20',58:'S18 D20',
+  60:'S20 D20',
+
+  // ── 2-dart finishes: treble routes (61+) ────────────────────
+  61:'T15 D8',  62:'T10 D16', 63:'T11 D15', 64:'T16 D8',
+  65:'T15 D10', 66:'T10 D18', 67:'T17 D8',  68:'T12 D16',
+  69:'T11 D18', 70:'T10 D20', 71:'T13 D16', 72:'T16 D12',
+  73:'T19 D8',  74:'T14 D16', 75:'T15 D15', 76:'T20 D8',
+  77:'T19 D10', 78:'T18 D12', 79:'T19 D11', 80:'T20 D10',
+  81:'T19 D12', 82:'T14 D20', 83:'T17 D16', 84:'T20 D12',
+  85:'T15 D20', 86:'T18 D16', 87:'T17 D18', 88:'T16 D20',
+  89:'T19 D16', 90:'T18 D18', 91:'T17 D20', 92:'T20 D16',
+  93:'T19 D18', 94:'T18 D20', 95:'T19 D19', 96:'T20 D18',
+  97:'T19 D20', 98:'T20 D19', 100:'T20 D20',
+
+  // ── 3-dart finishes ─────────────────────────────────────────
+  101:'T20 S1 D20',  102:'T20 S2 D20',  103:'T20 S3 D20',
+  104:'T20 S4 D20',  105:'T20 S5 D20',  106:'T20 S6 D20',
+  107:'T20 S7 D20',  108:'T20 S8 D20',  109:'T20 S9 D20',
+  110:'T20 S10 D20', 111:'T20 S11 D20', 112:'T20 S12 D20',
+  113:'T20 S13 D20', 114:'T20 S14 D20', 115:'T20 S15 D20',
+  116:'T20 S16 D20', 117:'T20 S17 D20', 118:'T20 S18 D20',
+  119:'T20 S19 D20', 120:'T20 S20 D20',
+  121:'T20 S13 D16', 122:'T18 S18 D16', 123:'T19 S14 D16',
+  124:'T20 S16 D16', 125:'T20 S17 D16', 126:'T19 S19 D16',
+  127:'T20 S19 D16', 128:'T20 S20 D16', 129:'T19 S20 D16',
+  130:'T20 S18 D16', 131:'T20 S19 D12', 132:'T20 S20 D12',
+  133:'T20 S13 D20', 134:'T20 S14 D20', 135:'T20 S15 D20',
+  136:'T20 S16 D20', 137:'T20 S17 D20', 138:'T20 S18 D20',
+  139:'T20 S19 D20', 140:'T20 S20 D20',
+  141:'T20 T15 D18', 142:'T20 T14 D20', 143:'T20 T17 D16',
+  144:'T20 T20 D12', 145:'T20 T15 D20', 146:'T20 T18 D16',
+  147:'T20 T17 D18', 148:'T20 T16 D20', 149:'T20 T19 D16',
+  150:'T20 T18 D18', 151:'T20 T17 D20', 152:'T20 T20 D16',
+  153:'T20 T19 D18', 154:'T20 T18 D20', 155:'T20 T19 D19',
+  156:'T20 T20 D18', 157:'T20 T19 D20', 158:'T20 T20 D19',
+  160:'T20 T20 D20', 161:'T20 T17 Bull', 164:'T20 T18 Bull',
+  167:'T20 T19 Bull', 170:'T20 T20 Bull',
+};
+
+function getFinish(score) {
+  if (score < 2 || score > 170) return null;
+  const text = checkoutTable[score];
+  if (!text) return null;
+  return { darts: text.split(' ').length, text };
+}
+
+// ===================== AROUND THE CLOCK =====================
+let attcCurrent = 1;
+let attcDartsThrown = 0;
+let attcResults = []; // 'hit' or 'miss' for each number
+let attcHistory = []; // for undo
+
+// Doubles ATTC state - D20 down to D1 (index 0=D20, 19=D1)
+const DOUBLES_ORDER = [20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1];
+let attcDblIndex = 0;
+let attcDblDartsThrown = 0;
+let attcDblResults = [];
+let attcDblHistory = [];
+
+function startAroundClock(mode) {
+  if (mode === 'doubles') {
+    attcDblIndex = 0;
+    attcDblDartsThrown = 0;
+    attcDblResults = [];
+    attcDblHistory = [];
+    renderAttcDbl();
+    show('attcDblScreen');
+    return;
+  }
+  attcCurrent = 1;
+  attcDartsThrown = 0;
+  attcResults = [];
+  attcHistory = [];
+  renderAttc();
+  show('attcScreen');
+}
+
+function renderAttcDbl() {
+  const num = DOUBLES_ORDER[attcDblIndex];
+  const label = num === 25 ? 'D-Bull' : 'D' + num;
+  document.getElementById('attcDblTarget').textContent = label;
+  document.getElementById('attcDblSub').textContent = 'Hit this double to advance (' + (attcDblIndex+1) + '/20)';
+  document.getElementById('attcDblDarts').textContent = 'Darts thrown: ' + attcDblDartsThrown;
+  document.getElementById('attcDblHitBtn').textContent = '✓ Hit ' + label;
+
+  let grid = '';
+  DOUBLES_ORDER.forEach((n, i) => {
+    const lbl = n === 25 ? 'D-Bull' : 'D'+n;
+    let cls = '';
+    if (i < attcDblIndex) cls = attcDblResults[i] === 'hit' ? 'hit' : 'missed';
+    else if (i === attcDblIndex) cls = 'current';
+    grid += `<div class="attc-num ${cls}" style="font-size:.85em">${lbl}</div>`;
+  });
+  document.getElementById('attcDblGrid').innerHTML = grid;
+}
+
+function attcDblHit() {
+  playSound('dart');
+  attcDblHistory.push({ index: attcDblIndex, darts: attcDblDartsThrown, results: [...attcDblResults] });
+  // Record this double as hit (one result per double)
+  attcDblResults[attcDblIndex] = 'hit';
+  attcDblDartsThrown++;
+  attcDblIndex++;
+  if (attcDblIndex >= DOUBLES_ORDER.length) { attcDblFinish(); return; }
+  renderAttcDbl();
+}
+
+function attcDblMiss() {
+  playSound('bust');
+  attcDblHistory.push({ index: attcDblIndex, darts: attcDblDartsThrown, results: [...attcDblResults] });
+  // Record miss attempt but stay on same double — don't advance index
+  // We don't set a result yet; result only set when eventually hit
+  attcDblDartsThrown++;
+  renderAttcDbl();
+  const el = document.getElementById('attcDblTarget');
+  el.style.color = '#a32d2d';
+  setTimeout(() => el.style.color = '#4da3ff', 400);
+}
+
+function attcDblUndo() {
+  if (!attcDblHistory.length) return;
+  const prev = attcDblHistory.pop();
+  attcDblIndex = prev.index;
+  attcDblDartsThrown = prev.darts;
+  attcDblResults = prev.results;
+  renderAttcDbl();
+}
+
+function attcDblFinish() {
+  playSound('win');
+  const hits = Object.values(attcDblResults).filter(r => r === 'hit').length;
+  const darts = attcDblDartsThrown;
+  saveGameToHistory({ type: 'attc-dbl', date: new Date().toISOString(), darts, hits });
+  setTimeout(() => {
+    alert('🎯 Around the Clock Doubles complete!\n\nDarts thrown: ' + darts + '\nHit rate: ' + hits + '/20 (' + Math.round(hits/20*100) + '%)\nAvg darts per double: ' + (darts/20).toFixed(1));
+    show('menuScreen');
+  }, 200);
+}
+
+function renderAttc() {
+  document.getElementById('attcTarget').textContent = attcCurrent;
+  document.getElementById('attcDarts').textContent = 'Darts thrown: ' + attcDartsThrown;
+  let grid = '';
+  for (let i = 1; i <= 20; i++) {
+    let cls = '';
+    if (i < attcCurrent) cls = attcResults[i-1] === 'hit' ? 'hit' : 'missed';
+    else if (i === attcCurrent) cls = 'current';
+    grid += `<div class="attc-num ${cls}">${i}</div>`;
+  }
+  document.getElementById('attcGrid').innerHTML = grid;
+  document.getElementById('attcHitBtn').textContent = '✓ Hit ' + attcCurrent;
+}
+
+function attcHit() {
+  playSound('dart');
+  attcHistory.push({ current: attcCurrent, darts: attcDartsThrown, results: {...attcResults} });
+  attcResults[attcCurrent - 1] = 'hit';
+  attcDartsThrown++;
+  attcCurrent++;
+  if (attcCurrent > 20) { attcFinish(); return; }
+  renderAttc();
+}
+
+function attcMiss() {
+  playSound('bust');
+  attcHistory.push({ current: attcCurrent, darts: attcDartsThrown, results: {...attcResults} });
+  // Don't record result yet — only record 'hit' when number is hit
+  attcDartsThrown++;
+  renderAttc();
+  const el = document.getElementById('attcTarget');
+  el.style.color = '#a32d2d';
+  setTimeout(() => el.style.color = '#4da3ff', 400);
+}
+
+function attcUndo() {
+  if (!attcHistory.length) return;
+  const prev = attcHistory.pop();
+  attcCurrent = prev.current;
+  attcDartsThrown = prev.darts;
+  attcResults = {...prev.results};
+  renderAttc();
+}
+
+function attcFinish() {
+  playSound('win');
+  const hits = Object.values(attcResults).filter(r => r === 'hit').length;
+  const darts = attcDartsThrown;
+  saveGameToHistory({ type: 'attc', date: new Date().toISOString(), darts, hits });
+  setTimeout(() => {
+    alert(`🎯 Around the Clock complete!\n\nDarts thrown: ${darts}\nHit rate: ${hits}/20 (${Math.round(hits/20*100)}%)\nAvg darts per number: ${(darts/20).toFixed(1)}`);
+    show('menuScreen');
+  }, 200);
+}
+
+// ===================== CPU AI =====================
+const CPU_PROFILES = {
+  beginner: { mean:25, std:15, doubleChance:0.15, name:'🐣 CPU' },
+  pub:      { mean:45, std:20, doubleChance:0.35, name:'🍺 CPU' },
+  world:    { mean:85, std:18, doubleChance:0.75, name:'🏆 CPU' },
+};
+
+function randNormal(mean, std) {
+  const u = 1 - Math.random(), v = Math.random();
+  return Math.round(mean + Math.sqrt(-2*Math.log(u)) * Math.cos(2*Math.PI*v) * std);
+}
+
+function cpuThrowTurn(cpuScore, profile) {
+  if (cpuScore <= 170 && checkoutTable[cpuScore]) {
+    if (Math.random() < profile.doubleChance) return cpuScore;
+    if (cpuScore <= 50) return 0;
+    const parts = checkoutTable[cpuScore].split(' ');
+    return parts.length > 1 ? Math.floor(cpuScore * 0.4) : 0;
+  }
+  let score = randNormal(profile.mean, profile.std);
+  score = Math.max(0, Math.min(score, 180));
+  if (score >= cpuScore) score = cpuScore > 40 ? Math.max(0, cpuScore - 2 - Math.floor(Math.random()*20)) : 0;
+  if (cpuScore - score === 1) score = Math.max(0, score - 2);
+  return Math.max(0, score);
+}
+
+// ===================== GAME STATE =====================
+let mode = "solo";
+let players = ["Player 1","Player 2"];
+let scores = [501,501];
+let startingScore = 501;
+let currentPlayer = 0;
+let isDoubles = false;
+let darts = [], dartCount = 0, turnStart = 0, currentEntry = "";
+let turns = [0,0], totalScored = [0,0], history = [];
+let isCpuMode = false, cpuDifficulty = 'beginner';
+let seriesBest = 3, seriesWins = [0,0], seriesLegsToWin = 2;
+let currentLegWinner = -1;
+let legHighestCheckout = 0;
+
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function selectMode(m) {
+  mode = m;
+  if (m === 'cpu') { show('cpuSetup'); document.getElementById('cpuPlayerName').value = profile.name; return; }
+  players = m === "solo" ? [profile.name] : [profile.name,"Player 2"];
+  renderNameFields();
+  show('nameScreen');
+}
+
+function selectDifficulty(d) {
+  cpuDifficulty = d;
+  document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('diff-'+d).classList.add('selected');
+}
+
+function selectSeries(n) {
+  seriesBest = n; seriesLegsToWin = Math.ceil(n/2);
+  document.querySelectorAll('.series-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('series-'+n).classList.add('selected');
+}
+
+function startCpuGame(s) {
+  isCpuMode = true; mode = 'multi';
+  const pName = document.getElementById('cpuPlayerName').value.trim() || profile.name;
+  players = [pName, CPU_PROFILES[cpuDifficulty].name];
+  seriesWins = [0,0]; seriesLegsToWin = Math.ceil(seriesBest/2);
+  startLeg(s);
+}
+
+function startLeg(s) {
+  startingScore = s;
+  scores = players.map(() => s);
+  currentPlayer = 0; isDoubles = false;
+  darts = []; dartCount = 0; currentEntry = "";
+  turns = [0,0]; totalScored = [0,0]; history = [];
+  legHighestCheckout = 0;
+  turnStart = scores[0];
+  document.getElementById('gameLabel').textContent = s + ' – Leg '+(seriesWins[0]+seriesWins[1]+1);
+  document.getElementById('missBtn').style.display = 'none';
+  document.getElementById('otherAvgWrap').style.display = 'flex';
+  document.getElementById('otherAvgLabel').textContent = players[1]+' avg';
+  document.getElementById('seriesBar').style.display = 'block';
+  document.getElementById('cpuThinking').textContent = '';
+  updateSeriesBar();
+  setKeypadEnabled(true);
+  updateEntryDisplay();
+  render();
+  show('game');
+}
+
+function renderNameFields() {
+  const c = document.getElementById('nameFields');
+  c.innerHTML = '';
+  players.forEach((p,i) => {
+    c.innerHTML += `<div class="name-field">
+      <label>${mode==='solo'?'Your name':'Player '+(i+1)+' name'}</label>
+      <input class="name-input" id="name${i}" value="${p}" placeholder="${p}"/>
+    </div>`;
+  });
+}
+
+function goToGameSelect() {
+  players.forEach((_,i) => {
+    const v = document.getElementById('name'+i).value.trim();
+    if (v) players[i] = v;
+  });
+  show('gameSelect');
+}
+
+function startGame(s) {
+  isCpuMode = false;
+  startingScore = s;
+  scores = players.map(() => s);
+  currentPlayer = 0;
+  isDoubles = (s===40||s===100||s===170);
+  darts = []; dartCount = 0; currentEntry = "";
+  turns = players.map(()=>0); totalScored = players.map(()=>0); history = [];
+  legHighestCheckout = 0;
+  turnStart = scores[0];
+  document.getElementById('gameLabel').textContent = s+(isDoubles?' – doubles':'');
+  document.getElementById('missBtn').style.display = isDoubles?'':'none';
+  document.getElementById('otherAvgWrap').style.display = (mode==='multi')?'flex':'none';
+  document.getElementById('seriesBar').style.display = 'none';
+  document.getElementById('cpuThinking').textContent = '';
+  setKeypadEnabled(true);
+  updateEntryDisplay();
+  render();
+  show('game');
+}
+
+function goHome() { isCpuMode = false; show('menuScreen'); }
+function playAgain() {
+  if (isCpuMode) {
+    seriesWins = [0,0];
+    currentLegWinner = -1;
+    updateSeriesBar();
+    startLeg(startingScore);
+  } else {
+    startGame(startingScore);
+  }
+}
+
+function setKeypadEnabled(on) {
+  document.querySelectorAll('#keypad button').forEach(b => {
+    // Always keep undo enabled so player can undo before CPU turn if needed
+    if (b.getAttribute('onclick') === 'undoLast()') return;
+    b.disabled = !on;
+  });
+}
+
+function padPress(d) {
+  const next = currentEntry + d;
+  if (parseInt(next) > 180) return;
+  currentEntry = String(next);
+  updateEntryDisplay();
+}
+
+function updateEntryDisplay() {
+  document.getElementById('dartEntryDisplay').textContent = currentEntry===''?'—':currentEntry;
+}
+
+function submitDart() {
+  if (currentEntry==='') return;
+  const v = parseInt(currentEntry);
+  currentEntry = ''; updateEntryDisplay();
+  playSound('dart');
+
+  if (isDoubles) {
+    recordDart(v);
+  } else {
+    const newScore = scores[currentPlayer] - v;
+    if (newScore < 0) {
+      playSound('bust');
+      alert('Bust! Score stays at '+scores[currentPlayer]+'. Gone below zero.');
+      return;
+    }
+    if (newScore === 1) {
+      playSound('bust');
+      alert('Bust! Cannot leave 1 — no double finishes from 1.');
+      return;
+    }
+    if (newScore === 0) {
+      const finishing = scores[currentPlayer];
+      // Only bust if there is genuinely no valid checkout for this score
+      // (i.e. odd numbers with no checkout route — can't finish on a double)
+      if (finishing !== 50 && finishing % 2 !== 0 && !checkoutTable[finishing]) {
+        playSound('bust');
+        alert('Bust! Cannot finish on ' + finishing + ' — no valid double checkout exists for this score.');
+        return;
+      }
+    }
+    history.push({player:currentPlayer,scoreBefore:scores[currentPlayer],turns:[...turns],totalScored:[...totalScored]});
+    if (newScore === 0) {
+      if (scores[currentPlayer] > legHighestCheckout) legHighestCheckout = scores[currentPlayer];
+      winLeg(); return;
+    }
+    totalScored[currentPlayer] += v;
+    turns[currentPlayer]++;
+    scores[currentPlayer] = newScore;
+    nextPlayer();
+  }
+}
+
+function recordDart(v) {
+  if (dartCount >= 3) return;
+  darts.push(v); dartCount++;
+  const total = darts.reduce((a,b)=>a+b,0);
+  const newScore = turnStart - total;
+  if (newScore < 0) { bust(); return; }
+  scores[currentPlayer] = newScore;
+  if (newScore === 0) { winLeg(); return; }
+  render();
+  if (dartCount >= 3) {
+    history.push({player:currentPlayer,scoreBefore:turnStart,turns:[...turns],totalScored:[...totalScored]});
+    totalScored[currentPlayer] += (turnStart - newScore);
+    turns[currentPlayer]++;
+    darts = []; dartCount = 0;
+    nextPlayer();
+  }
+}
+
+function miss() { currentEntry=''; updateEntryDisplay(); recordDart(0); }
+
+function bust() {
+  playSound('bust');
+  currentEntry = '';
+  // Save turnStart (original score before this turn) so undo restores correctly
+  history.push({player:currentPlayer,scoreBefore:turnStart,turns:[...turns],totalScored:[...totalScored]});
+  turns[currentPlayer]++;
+  scores[currentPlayer] = turnStart;
+  darts = []; dartCount = 0;
+  nextPlayer();
+}
+
+function undoLast() {
+  if (!history.length) return;
+  if (isCpuMode && currentPlayer === 1) return;
+  const last = history.pop();
+  currentPlayer = last.player;
+  scores[currentPlayer] = last.scoreBefore;
+  turns = [...last.turns]; totalScored = [...last.totalScored];
+  turnStart = scores[currentPlayer];
+  darts = []; dartCount = 0; currentEntry = '';
+  setKeypadEnabled(true);
+  updateEntryDisplay(); render();
+}
+
+function nextPlayer() {
+  if (mode==='multi') currentPlayer = (currentPlayer+1) % players.length;
+  turnStart = scores[currentPlayer];
+  darts = []; dartCount = 0; currentEntry = '';
+  updateEntryDisplay(); render();
+  if (isCpuMode && currentPlayer === 1) { setKeypadEnabled(false); doCpuTurn(); }
+}
+
+// ===================== CPU TURN =====================
+function doCpuTurn() {
+  const profile = CPU_PROFILES[cpuDifficulty];
+  document.getElementById('cpuThinking').textContent = profile.name + ' is throwing...';
+
+  // Animate CPU "thinking" dots only — don't corrupt score display
+  let dots = 0;
+  const tickInterval = setInterval(() => {
+    dots = (dots + 1) % 4;
+    document.getElementById('cpuThinking').textContent = CPU_PROFILES[cpuDifficulty].name + ' is throwing' + '.'.repeat(dots);
+  }, 300);
+
+  setTimeout(() => {
+    clearInterval(tickInterval);
+    const cpuScore = scores[1];
+    const scored = cpuThrowTurn(cpuScore, profile);
+    const newScore = cpuScore - scored;
+
+    document.getElementById('cpuThinking').textContent =
+      profile.name + ' scored ' + scored + (scored === 0 ? ' (missed!)' : '!');
+    playSound(scored === 0 ? 'bust' : 'dart');
+
+    if (newScore < 0 || newScore === 1) {
+      turns[1]++;
+      setTimeout(() => {
+        document.getElementById('cpuThinking').textContent = profile.name + ' busted!';
+        playSound('bust');
+        setTimeout(() => {
+          history.push({player:1,scoreBefore:cpuScore,turns:[...turns],totalScored:[...totalScored]});
+          currentPlayer = 0; turnStart = scores[0];
+          darts = []; dartCount = 0;
+          document.getElementById('cpuThinking').textContent = '';
+          setKeypadEnabled(true); render();
+        }, 900);
+      }, 400);
+      return;
+    }
+
+    if (newScore === 0) {
+      scores[1] = 0; totalScored[1] += scored; turns[1]++;
+      if (cpuScore > legHighestCheckout) legHighestCheckout = cpuScore;
+      render();
+      setTimeout(() => winLeg(), 800);
+      return;
+    }
+
+    totalScored[1] += scored; turns[1]++; scores[1] = newScore;
+    setTimeout(() => {
+      document.getElementById('cpuThinking').textContent = '';
+      history.push({player:1,scoreBefore:cpuScore,turns:[...turns],totalScored:[...totalScored]});
+      currentPlayer = 0; turnStart = scores[0];
+      darts = []; dartCount = 0;
+      setKeypadEnabled(true); render();
+    }, 1200);
+  }, 1400);
+}
+
+// ===================== WIN / SERIES =====================
+function buildLegStats() {
+  let html = '';
+  players.forEach((p,i) => {
+    const t = turns[i];
+    const avg = t > 0 ? (totalScored[i]/t).toFixed(1) : '—';
+    html += `<div class="end-stat-row"><span class="end-stat-label">${p} avg / visit</span><span class="end-stat-value">${avg}</span></div>
+             <div class="end-stat-row"><span class="end-stat-label">${p} visits</span><span class="end-stat-value">${t}</span></div>`;
+  });
+  if (legHighestCheckout > 0) {
+    html += `<div class="end-stat-row"><span class="end-stat-label">Highest checkout</span><span class="end-stat-value">${legHighestCheckout}</span></div>`;
+  }
+  return html;
+}
+
+function winLeg() {
+  playSound('win');
+  const winner = currentPlayer;
+  currentLegWinner = winner;
+
+  // Save to history (player stats only)
+  const t = turns[0]; const avg = t > 0 ? totalScored[0]/t : 0;
+  saveGameToHistory({
+    type: 'game', date: new Date().toISOString(),
+    gameType: startingScore, won: winner === 0,
+    avg, visits: turns[0], checkout: legHighestCheckout
+  });
+
+  if (isCpuMode) {
+    seriesWins[winner]++;
+    updateSeriesBar();
+    const statsHtml = buildLegStats();
+    if (seriesWins[0] >= seriesLegsToWin || seriesWins[1] >= seriesLegsToWin) {
+      showSeriesEnd(statsHtml);
+    } else {
+      const isPlayerWin = winner === 0;
+      document.getElementById('legEndTitle').textContent = isPlayerWin ? '🎯 Leg won!' : '💀 Leg lost!';
+      document.getElementById('legEndTitle').className = 'end-title'+(isPlayerWin?'':' lost');
+      document.getElementById('legEndSubtitle').textContent =
+        players[winner]+' wins the leg!  '+seriesWins[0]+' – '+seriesWins[1];
+      document.getElementById('legEndStats').innerHTML = statsHtml;
+      show('legEndScreen');
+    }
+  } else {
+    document.getElementById('endTitle').textContent = '🎯 Winner!';
+    document.getElementById('endTitle').className = 'end-title';
+    document.getElementById('endSubtitle').textContent = players[winner]+' wins!';
+    document.getElementById('endSeriesScore').style.display = 'none';
+    document.getElementById('endStats').innerHTML = buildLegStats();
+    show('endScreen');
+  }
+}
+
+function showSeriesEnd(statsHtml) {
+  const playerWon = seriesWins[0] >= seriesLegsToWin;
+  document.getElementById('endTitle').textContent = playerWon ? '🏆 Series won!' : '💀 Series lost!';
+  document.getElementById('endTitle').className = 'end-title'+(playerWon?'':' lost');
+  document.getElementById('endSubtitle').textContent =
+    'Best of '+seriesBest+' · '+cpuDifficulty.charAt(0).toUpperCase()+cpuDifficulty.slice(1);
+  document.getElementById('endSeriesScore').style.display = 'block';
+  document.getElementById('endSeriesScore').textContent = seriesWins[0]+' – '+seriesWins[1];
+  document.getElementById('endStats').innerHTML = statsHtml;
+  show('endScreen');
+}
+
+function nextLeg() {
+  startLeg(startingScore);
+  currentPlayer = currentLegWinner === 0 ? 1 : 0;
+  turnStart = scores[currentPlayer];
+  render();
+  if (isCpuMode && currentPlayer === 1) { setKeypadEnabled(false); doCpuTurn(); }
+}
+
+function updateSeriesBar() {
+  document.getElementById('seriesP1Label').textContent = players[0];
+  document.getElementById('seriesP2Label').textContent = players[1];
+  document.getElementById('seriesScore').textContent = seriesWins[0]+' – '+seriesWins[1];
+  let p1='', p2='';
+  for (let i=0; i<seriesLegsToWin; i++) {
+    p1 += `<div class="leg-dot${i<seriesWins[0]?' won':''}"></div>`;
+    p2 += `<div class="leg-dot${i<seriesWins[1]?' cpu-won':''}"></div>`;
+  }
+  document.getElementById('seriesP1Dots').innerHTML = p1;
+  document.getElementById('seriesP2Dots').innerHTML = p2;
+}
+
+// ===================== RENDER =====================
+function render() {
+  const isCpuTurn = isCpuMode && currentPlayer === 1;
+  const nameEl = document.getElementById('playerName');
+  nameEl.textContent = players[currentPlayer];
+  nameEl.className = 'player-name'+(isCpuTurn?' cpu':'');
+  const scoreEl = document.getElementById('score');
+  scoreEl.textContent = scores[currentPlayer];
+  const inCheckout = !isDoubles && scores[currentPlayer] <= 170 && scores[currentPlayer] >= 2 && checkoutTable[scores[currentPlayer]];
+  scoreEl.className = 'player-score' + (inCheckout ? ' checkout' : '');
+
+  if (isDoubles) {
+    const d = i => darts[i]!==undefined?darts[i]:'-';
+    document.getElementById('dartInfo').textContent = `D1:${d(0)} D2:${d(1)} D3:${d(2)}`;
+  } else {
+    document.getElementById('dartInfo').textContent = isCpuTurn?'Computer is throwing...':'';
+  }
+
+  if (mode==='multi'||isCpuMode) {
+    const other = (currentPlayer+1)%players.length;
+    document.getElementById('otherScoreRow').style.display = 'flex';
+    document.getElementById('otherScoreName').textContent = players[other];
+    document.getElementById('otherScore').textContent = scores[other];
+    document.getElementById('otherAvgLabel').textContent = players[other]+' avg';
+    document.getElementById('otherAvgDisplay').textContent =
+      turns[other]>0?(totalScored[other]/turns[other]).toFixed(1):'—';
+  } else {
+    document.getElementById('otherScoreRow').style.display = 'none';
+    document.getElementById('otherScore').textContent = '';
+  }
+
+  const t = turns[currentPlayer];
+  document.getElementById('avgDisplay').textContent = t>0?(totalScored[currentPlayer]/t).toFixed(1):'—';
+
+  const finishBox = document.getElementById('finishBox');
+  if (!isDoubles) {
+    if (isCpuTurn) {
+      // Show CPU's checkout route during its turn
+      const cpuRemaining = scores[1];
+      const f = getFinish(cpuRemaining);
+      if (f) {
+        document.getElementById('finishLabel').textContent = '🤖 CPU checkout — ' + (f.darts===1?'1 dart':f.darts+' darts');
+        document.getElementById('finishSuggestion').textContent = f.text;
+        finishBox.style.display = 'block';
+        finishBox.style.background = '#2e1a00';
+        finishBox.style.borderColor = '#7a4a00';
+        document.getElementById('finishLabel').style.color = '#ff9f43';
+        document.getElementById('finishSuggestion').style.color = '#ffb347';
+      } else {
+        finishBox.style.display = 'none';
+      }
+    } else {
+      // Reset to green style and show player's checkout
+      finishBox.style.background = '#1a2e1a';
+      finishBox.style.borderColor = '#2a5a2a';
+      document.getElementById('finishLabel').style.color = '#6abf6a';
+      document.getElementById('finishSuggestion').style.color = '#00e676';
+      const f = getFinish(scores[currentPlayer]);
+      if (f) {
+        document.getElementById('finishLabel').textContent = f.darts===1?'1 dart finish':f.darts+' dart finish';
+        document.getElementById('finishSuggestion').textContent = f.text;
+        finishBox.style.display = 'block';
+      } else {
+        finishBox.style.display = 'none';
+      }
+    }
+  } else {
+    finishBox.style.display = 'none';
+  }
+
+  if (isCpuMode) updateSeriesBar();
+}
+
+// ===================== INIT =====================
+renderMenuAvatar();
+
+
+</script>
+</body>
+</html>
