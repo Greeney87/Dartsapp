@@ -511,6 +511,33 @@ canvas.graph { width: 100%; height: 140px; display: block; }
 .game-btn.active-game { border-color: var(--blue); background: var(--blue-dim); color: var(--blue); }
 
 h2 { font-weight: 700; text-align: center; margin-bottom: 16px; font-size: 1.3em; }
+
+/* ── RESPONSIVE BREAKPOINTS ────────────────────── */
+@media (max-width: 380px) {
+  .app { padding: 12px 10px 24px; }
+  .player-score { font-size: 4.2em; }
+  .num-grid button { padding: 13px; font-size: 1em; }
+  .dart-entry-display { font-size: 2.2em; min-height: 50px; }
+  .diff-btn, .series-btn { padding: 8px 4px; font-size: .75em; }
+  .game-btn { padding: 14px 4px; font-size: 1.1em; }
+  .stats-row { gap: 0; }
+  .stat-item { padding: 6px 4px; }
+  .stat-value { font-size: .9em; }
+}
+
+@media (min-width: 600px) {
+  .app { padding: 24px 24px 40px; }
+  .player-score { font-size: 6em; }
+  .num-grid button { padding: 20px; font-size: 1.3em; }
+  .dart-entry-display { font-size: 3em; min-height: 68px; }
+  .btn { padding: 16px; font-size: 1em; }
+  .game-btn { padding: 22px 6px; font-size: 1.5em; }
+  .scoreboard { padding: 20px 16px 16px; }
+}
+
+@media (min-width: 768px) {
+  .app { max-width: 520px; }
+}
 </style>
 </head>
 <body>
@@ -526,13 +553,32 @@ h2 { font-weight: 700; text-align: center; margin-bottom: 16px; font-size: 1.3em
 
   <div id="tabHome">
     <div id="menuAvatar"></div>
+
+    <!-- Standard Games -->
     <div class="section-label">Standard Games</div>
-    <button class="btn btn-primary" onclick="selectMode('solo')">🎯 Solo Practice</button>
-    <button class="btn" onclick="selectMode('multi')">👥 Local Multiplayer</button>
-    <button class="btn btn-orange" onclick="selectMode('cpu')">🤖 vs Computer</button>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0 0">
+      <button class="btn btn-primary" style="margin:0" onclick="selectMode('solo')">🎯 Solo</button>
+      <button class="btn" style="margin:0" onclick="selectMode('multi')">👥 Multiplayer</button>
+    </div>
+
+    <!-- vs Computer — visually separated -->
+    <div class="section-label">vs Computer</div>
+    <button class="btn btn-orange" onclick="selectMode('cpu')">🤖 Play vs Computer</button>
+
+    <!-- Practice Finishing — clearly separated section -->
+    <div class="section-label">Practice Finishing</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:6px 0 0">
+      <button class="btn" style="margin:0;border-color:#a78bfa;color:#a78bfa;font-family:'Rajdhani',sans-serif;font-size:1.2em;font-weight:700;padding:14px 6px" onclick="startGame(40)">40</button>
+      <button class="btn" style="margin:0;border-color:#a78bfa;color:#a78bfa;font-family:'Rajdhani',sans-serif;font-size:1.2em;font-weight:700;padding:14px 6px" onclick="startGame(100)">100</button>
+      <button class="btn" style="margin:0;border-color:#a78bfa;color:#a78bfa;font-family:'Rajdhani',sans-serif;font-size:1.2em;font-weight:700;padding:14px 6px" onclick="startGame(170)">170</button>
+    </div>
+
+    <!-- Practice Modes -->
     <div class="section-label">Practice Modes</div>
-    <button class="btn" style="border-color:#a78bfa;color:#a78bfa" onclick="startAroundClock('singles')">🕐 Around the Clock</button>
-    <button class="btn" style="border-color:#f472b6;color:#f472b6" onclick="startAroundClock('doubles')">🎯 Around the Clock Doubles</button>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0 0">
+      <button class="btn" style="margin:0;border-color:#f472b6;color:#f472b6;font-size:.82em" onclick="startAroundClock('singles')">🕐 Around the Clock</button>
+      <button class="btn" style="margin:0;border-color:#f472b6;color:#f472b6;font-size:.82em" onclick="startAroundClock('doubles')">🎯 Doubles Clock</button>
+    </div>
   </div>
 
   <div id="tabStats" style="display:none">
@@ -606,9 +652,9 @@ h2 { font-weight: 700; text-align: center; margin-bottom: 16px; font-size: 1.3em
   </div>
   <div class="section-label">Game</div>
   <div class="game-btn-grid">
-    <div class="game-btn" onclick="startCpuGame(501)">501</div>
-    <div class="game-btn" onclick="startCpuGame(401)">401</div>
     <div class="game-btn" onclick="startCpuGame(301)">301</div>
+    <div class="game-btn" onclick="startCpuGame(401)">401</div>
+    <div class="game-btn" onclick="startCpuGame(501)">501</div>
   </div>
 </div>
 
@@ -626,9 +672,15 @@ h2 { font-weight: 700; text-align: center; margin-bottom: 16px; font-size: 1.3em
   </div>
   <div class="section-label">Doubles</div>
   <div class="game-btn-grid">
-    <div class="game-btn" onclick="startGame(40)">40</div>
-    <div class="game-btn" onclick="startGame(100)">100</div>
-    <div class="game-btn" onclick="startGame(170)">170</div>
+    <div class="game-btn" onclick="startDoubles(40)">40</div>
+    <div class="game-btn" onclick="startDoubles(100)">100</div>
+    <div class="game-btn" onclick="startDoubles(170)">170</div>
+  </div>
+  <div class="section-label">Practice Finishing</div>
+  <div class="game-btn-grid">
+    <div class="game-btn" onclick="startGame(40)"  style="border-color:#a78bfa;color:#a78bfa">40</div>
+    <div class="game-btn" onclick="startGame(100)" style="border-color:#a78bfa;color:#a78bfa">100</div>
+    <div class="game-btn" onclick="startGame(170)" style="border-color:#a78bfa;color:#a78bfa">170</div>
   </div>
 </div>
 
@@ -1060,6 +1112,33 @@ function getFinish(score) {
   return { darts: text.split(' ').length, text };
 }
 
+
+// ===================== GAME MODE CONFIG =====================
+// Single config model — reused by all mode entry points
+const GAME_MODES = {
+  solo301:  { name:'301',  startingScore:301, vsComputer:false },
+  solo401:  { name:'401',  startingScore:401, vsComputer:false },
+  solo501:  { name:'501',  startingScore:501, vsComputer:false },
+  cpu301:   { name:'301',  startingScore:301, vsComputer:true  },
+  cpu401:   { name:'401',  startingScore:401, vsComputer:true  },
+  cpu501:   { name:'501',  startingScore:501, vsComputer:true  },
+  // Practice Finishing — identical to standard games, just different startingScore
+  prac40:   { name:'40',   startingScore:40,  vsComputer:false },
+  prac100:  { name:'100',  startingScore:100, vsComputer:false },
+  prac170:  { name:'170',  startingScore:170, vsComputer:false },
+};
+
+// Routes config into existing engine — no special casing for practice modes
+function startFromConfig(configKey) {
+  const cfg = GAME_MODES[configKey];
+  if (!cfg) return;
+  if (cfg.vsComputer) {
+    startCpuGame(cfg.startingScore);
+  } else {
+    startGame(cfg.startingScore); // isCpuMode=false already enforced inside startGame
+  }
+}
+
 // ===================== AROUND THE CLOCK =====================
 let attcCurrent = 1;
 let attcDartsThrown = 0;
@@ -1221,16 +1300,46 @@ function randNormal(mean, std) {
 }
 
 function cpuThrowTurn(cpuScore, profile) {
+  // TASK 5: Realistic checkout — deterministic table-based when in range
   if (cpuScore <= 170 && checkoutTable[cpuScore]) {
-    if (Math.random() < profile.doubleChance) return cpuScore;
-    if (cpuScore <= 50) return 0;
     const parts = checkoutTable[cpuScore].split(' ');
-    return parts.length > 1 ? Math.floor(cpuScore * 0.4) : 0;
+    const numDarts = parts.length;
+    if (numDarts === 1) {
+      // Single double — use doubleChance directly
+      return Math.random() < profile.doubleChance ? cpuScore : 0;
+    }
+    // Multi-dart finish: each setup dart has high hit chance, last dart uses doubleChance
+    const setupHitChance = Math.min(0.95, profile.doubleChance + 0.4);
+    // Work out setup score (all darts except last double)
+    let setupScore = 0;
+    for (let i = 0; i < numDarts - 1; i++) {
+      const part = parts[i];
+      const mult = part.startsWith('T') ? 3 : part.startsWith('D') ? 2 : 1;
+      const num = parseInt(part.replace(/[STD]/,''));
+      setupScore += mult * num;
+    }
+    const lastPart = parts[numDarts - 1];
+    const lastMult = lastPart.startsWith('Bull') ? 1 : 2;
+    const lastNum = lastPart === 'Bull' ? 25 : parseInt(lastPart.replace('D',''));
+    const lastScore = lastMult * lastNum;
+
+    if (Math.random() < setupHitChance) {
+      // Setup darts landed — attempt double
+      if (Math.random() < profile.doubleChance) return cpuScore; // full checkout
+      // Missed double — scored setup only
+      return setupScore;
+    }
+    // Missed setup — score partial
+    return Math.floor(setupScore * 0.5);
   }
+
+  // Standard scoring — safe strategy aiming for T20 area
   let score = randNormal(profile.mean, profile.std);
   score = Math.max(0, Math.min(score, 180));
-  if (score >= cpuScore) score = cpuScore > 40 ? Math.max(0, cpuScore - 2 - Math.floor(Math.random()*20)) : 0;
-  if (cpuScore - score === 1) score = Math.max(0, score - 2);
+  // Don't leave 1 or go negative
+  if (cpuScore - score <= 1) {
+    score = Math.max(0, cpuScore - 2 - Math.floor(Math.random() * 10));
+  }
   return Math.max(0, score);
 }
 
@@ -1321,12 +1430,24 @@ function goToGameSelect() {
   show('gameSelect');
 }
 
+// Dedicated entry point for doubles games — sets isDoubles=true before starting
+function startDoubles(s) {
+  startGame(s);
+  isDoubles = true;
+  document.getElementById('missBtn').style.display = '';
+  document.getElementById('gameLabel').textContent = s + ' – doubles';
+  render();
+}
+
 function startGame(s) {
-  isCpuMode = false;
+  isCpuMode = false; // SOLO FIX: always off — prevents AI turns in solo/practice
   startingScore = s;
   scores = players.map(() => s);
   currentPlayer = 0;
-  isDoubles = (s===40||s===100||s===170);
+  // Practice Finishing (40/100/170) uses standard game flow, NOT doubles mode.
+  // isDoubles only applies to the dedicated doubles games accessed via game select.
+  // Those are now unreachable via Practice Finishing since buttons call startGame() directly.
+  isDoubles = false;
   darts = []; dartCount = 0; currentEntry = "";
   turns = players.map(()=>0); totalScored = players.map(()=>0); history = [];
   legHighestCheckout = 0;
@@ -1447,6 +1568,14 @@ function bust() {
 }
 
 function undoLast() {
+  // BACKSPACE: if input buffer has content, delete last digit only.
+  // Does NOT affect history, scores or previous turns.
+  if (currentEntry.length > 0) {
+    currentEntry = currentEntry.slice(0, -1);
+    updateEntryDisplay();
+    return;
+  }
+  // Buffer empty — revert last committed turn as before
   if (!history.length) return;
   if (isCpuMode && currentPlayer === 1) return;
   const last = history.pop();
@@ -1454,7 +1583,7 @@ function undoLast() {
   scores[currentPlayer] = last.scoreBefore;
   turns = [...last.turns]; totalScored = [...last.totalScored];
   turnStart = scores[currentPlayer];
-  darts = []; dartCount = 0; currentEntry = '';
+  darts = []; dartCount = 0;
   setKeypadEnabled(true);
   updateEntryDisplay(); render();
 }
