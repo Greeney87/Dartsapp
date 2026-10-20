@@ -358,7 +358,7 @@ h2{font-weight:700;text-align:center;margin-bottom:16px;font-size:1.3em}
       <div class="card-title">How it works</div>
       <p style="color:var(--text2);font-size:.85em;line-height:1.7">
         1. Mount phone with camera facing the board<br>
-        2. Click 5 calibration points on the live image<br>
+        2. Tap 2 calibration points: Bull centre, then T20 outer edge<br>
         3. Capture a clean baseline (no darts in board)<br>
         4. Throw darts then tap Detect<br>
         5. Confirm or adjust before submitting
@@ -378,15 +378,15 @@ h2{font-weight:700;text-align:center;margin-bottom:16px;font-size:1.3em}
   </div>
 
   <div id="camStep1" style="display:none">
-    <div class="cam-status"><div class="cam-dot g"></div><span id="camStatusText">Click the 5 calibration points</span></div>
+    <div class="cam-status"><div class="cam-dot g"></div><span id="camStatusText">Tap 2 points to calibrate the board</span></div>
     <div class="cam-wrap">
       <video id="camVideo" autoplay playsinline muted></video>
       <canvas id="camCalCanvas" class="cam-canvas clickable"></canvas>
       <div class="cam-overlay" id="camOverlay">Starting camera...</div>
     </div>
     <div class="cal-step">
-      <div class="cs-num" id="calStepNum">Point 1 of 5</div>
-      <div class="cs-label" id="calStepLabel">Click the Bull (centre)</div>
+      <div class="cs-num" id="calStepNum">Point 1 of 2</div>
+      <div class="cs-label" id="calStepLabel">Tap: Bull (centre — exact middle)</div>
     </div>
     <div style="display:flex;gap:8px;margin-top:8px">
       <button class="btn btn-amber" style="flex:1;margin:0" onclick="camResetCal()">Reset</button>
@@ -625,9 +625,12 @@ function render(){
 }
 
 // CAMERA
-const CAL_LABELS=['Bull (centre)','T20 (top)','T6 (right)','T11 (left)','T3 (bottom-right)'];
+const CAL_LABELS=['Bull (centre — tap the exact middle)','T20 wire (top outer edge of T20)'];
 const BOARD_ORDER=[20,1,18,4,13,6,10,15,2,17,3,19,7,16,8,11,14,9,12,5];
-const RR={bull:.025,ob:.055,ti:.36,to:.42,di:.59,do:.65};
+// Ring radii as fraction of full board radius (bull-to-double-outer)
+// Standard dartboard: bull=12.7mm, ob=31.8mm, treble inner=99mm, treble outer=107mm, double inner=162mm, double outer=170mm
+// Total radius used for calibration = outer double ring = 170mm
+const RR={bull:.075,ob:.187,ti:.582,to:.629,di:.953,do:1.0};
 let camStream=null,camBL=null,camCP=[],camT=null,camGS=501,camGT=501;
 
 function openCameraScreen(){
@@ -658,20 +661,36 @@ async function camStartCam(){
 }
 
 function camCalClick(e,cv){
-  if(camCP.length>=5)return;
+  if(camCP.length>=2)return;
   const r=cv.getBoundingClientRect(),sx=cv.width/r.width,sy=cv.height/r.height;
   camCP.push({x:(e.clientX-r.left)*sx,y:(e.clientY-r.top)*sy});
   camDrawCP(cv);camUpdCal();
-  if(camCP.length===5){camBuildT();document.getElementById('camCalDoneBtn').disabled=false;}
+  if(camCP.length===2){camBuildT();document.getElementById('camCalDoneBtn').disabled=false;}
 }
 function camDrawCP(cv){
   const ctx=cv.getContext('2d');ctx.clearRect(0,0,cv.width,cv.height);
-  const cols=['#ff4d4d','#22d3ee','#00d97e','#f59e0b','#a78bfa'];
-  camCP.forEach((p,i)=>{ctx.beginPath();ctx.arc(p.x,p.y,10,0,Math.PI*2);ctx.fillStyle=cols[i];ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();ctx.fillStyle='#fff';ctx.font='bold 11px Inter';ctx.textAlign='center';ctx.fillText(CAL_LABELS[i].split(' ')[0],p.x,p.y-14);});
+  const cols=['#ff4d4d','#22d3ee'];
+  const labels=['BULL','T20'];
+  camCP.forEach((p,i)=>{
+    ctx.beginPath();ctx.arc(p.x,p.y,14,0,Math.PI*2);ctx.fillStyle=cols[i]+'55';ctx.fill();
+    ctx.beginPath();ctx.arc(p.x,p.y,14,0,Math.PI*2);ctx.strokeStyle=cols[i];ctx.lineWidth=3;ctx.stroke();
+    ctx.fillStyle='#fff';ctx.font='bold 12px Inter';ctx.textAlign='center';ctx.fillText(labels[i],p.x,p.y-18);
+  });
 }
-function camUpdCal(){const n=camCP.length;document.getElementById('calStepNum').textContent=n<5?`Point ${n+1} of 5`:'All 5 set ✓';document.getElementById('calStepLabel').textContent=n<5?`Click ${CAL_LABELS[n]}`:'Tap Done to continue';}
+function camUpdCal(){const n=camCP.length;document.getElementById('calStepNum').textContent=n<2?`Point ${n+1} of 2`:'Both points set ✓';document.getElementById('calStepLabel').textContent=n<2?`Tap: ${CAL_LABELS[n]}`:'Tap Done to continue';}
 function camResetCal(){camCP=[];camT=null;document.getElementById('camCalDoneBtn').disabled=true;const cv=document.getElementById('camCalCanvas');if(cv)cv.getContext('2d').clearRect(0,0,cv.width,cv.height);camUpdCal();}
-function camBuildT(){const b=camCP[0],t=camCP[1],dx=t.x-b.x,dy=t.y-b.y,dist=Math.sqrt(dx*dx+dy*dy),rPx=dist/.41,rot=Math.atan2(dy,dx)-(-Math.PI/2);camT={b,rPx,rot};}
+function camBuildT(){
+  const b=camCP[0],t=camCP[1];
+  const dx=t.x-b.x,dy=t.y-b.y;
+  // Distance from bull to T20 outer wire = 170mm (full board radius)
+  // So rPx = pixel distance between the two tapped points
+  const rPx=Math.sqrt(dx*dx+dy*dy);
+  // Rotation: atan2 of (T20 - bull) gives the angle of "up" in image coords.
+  // T20 is at the top of the board (angle = -90° or -PI/2 in standard math).
+  // rot = how much the board is rotated from upright in the image.
+  const rot=Math.atan2(dy,dx)+Math.PI/2;
+  camT={b,rPx,rot};
+}
 function camToBaseline(){document.getElementById('camStep1').style.display='none';document.getElementById('camStep2').style.display='block';const v2=document.getElementById('camVideo2');if(camStream)v2.srcObject=camStream;}
 function camCaptureBaseline(){const vid=document.getElementById('camVideo2'),w=vid.videoWidth||640,h=vid.videoHeight||480,off=document.createElement('canvas');off.width=w;off.height=h;off.getContext('2d').drawImage(vid,0,0,w,h);camBL=off.getContext('2d').getImageData(0,0,w,h);document.getElementById('camStep2').style.display='none';document.getElementById('camStep3').style.display='block';const v3=document.getElementById('camVideo3');if(camStream)v3.srcObject=camStream;camUpdCamSB();playSound('dart');}
 
@@ -682,9 +701,9 @@ function camDetect(){
   const off=document.createElement('canvas');off.width=w;off.height=h;off.getContext('2d').drawImage(vid,0,0,w,h);
   const cur=off.getContext('2d').getImageData(0,0,w,h);
   let sx=0,sy=0,cnt=0;
-  for(let i=0;i<cur.data.length/4;i++){const p=i*4,d=(Math.abs(cur.data[p]-camBL.data[p])+Math.abs(cur.data[p+1]-camBL.data[p+1])+Math.abs(cur.data[p+2]-camBL.data[p+2]))/3;if(d>30){sx+=i%w;sy+=Math.floor(i/w);cnt++;}}
+  for(let i=0;i<cur.data.length/4;i++){const p=i*4,d=(Math.abs(cur.data[p]-camBL.data[p])+Math.abs(cur.data[p+1]-camBL.data[p+1])+Math.abs(cur.data[p+2]-camBL.data[p+2]))/3;if(d>40){sx+=i%w;sy+=Math.floor(i/w);cnt++;}}
   const oc=cv.getContext('2d');oc.clearRect(0,0,w,h);
-  if(cnt<80){document.getElementById('camLiveStatus').textContent='No dart detected — try again';document.getElementById('camDetectedBox').style.display='none';return;}
+  if(cnt<150){document.getElementById('camLiveStatus').textContent='No dart detected ('+cnt+' px) — try again';document.getElementById('camDetectedBox').style.display='none';return;}
   const cx=sx/cnt,cy=sy/cnt;
   oc.beginPath();oc.arc(cx,cy,16,0,Math.PI*2);oc.strokeStyle='#22d3ee';oc.lineWidth=3;oc.stroke();oc.beginPath();oc.arc(cx,cy,5,0,Math.PI*2);oc.fillStyle='#22d3ee';oc.fill();
   const res=camScore(cx,cy);
@@ -693,13 +712,30 @@ function camDetect(){
 
 function camScore(px,py){
   if(!camT)return{score:0,label:'Not calibrated'};
-  const{b,rPx,rot}=camT,dx=px-b.x,dy=py-b.y,dist=Math.sqrt(dx*dx+dy*dy),r=dist/rPx;
+  const{b,rPx,rot}=camT;
+  const dx=px-b.x,dy=py-b.y;
+  const dist=Math.sqrt(dx*dx+dy*dy);
+  const r=dist/rPx; // normalised radius (0=bull, 1=outer double edge)
+
   if(r<=RR.bull)return{score:50,label:'Bull'};
   if(r<=RR.ob)return{score:25,label:'Outer Bull'};
-  if(r>RR.do)return{score:0,label:'Miss'};
-  let a=(Math.atan2(dy,dx)-rot)*(180/Math.PI)+90;a=((a%360)+360)%360;
-  const si=Math.floor(a/18)%20,seg=BOARD_ORDER[si];
-  let m=1,rl='Single';if(r>=RR.ti&&r<=RR.to){m=3;rl='Treble';}if(r>=RR.di&&r<=RR.do){m=2;rl='Double';}
+  // Anything beyond the outer double is a miss
+  if(r>RR.do*1.05)return{score:0,label:'Miss'};
+
+  // Angle: subtract board rotation so 0° = T20 direction
+  // Board segments are 18° each, T20 centred at 0° (-9° to +9°)
+  let a=(Math.atan2(dy,dx)-rot)*(180/Math.PI);
+  // Normalise to 0–360
+  a=((a%360)+360)%360;
+  // Offset by half a segment (9°) so T20 sits centred at 0°
+  a=(a+9)%360;
+  const si=Math.floor(a/18)%20;
+  const seg=BOARD_ORDER[si];
+
+  let m=1,rl='Single';
+  if(r>=RR.ti&&r<=RR.to){m=3;rl='Treble';}
+  else if(r>=RR.di&&r<=RR.do){m=2;rl='Double';}
+
   return{score:seg*m,label:`${rl} ${seg}`};
 }
 
